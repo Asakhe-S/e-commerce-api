@@ -40,11 +40,3 @@ python manage.py runserver
 - Database used in this project: `db.sqlite3` (included in repo). If you prefer, remove it and re-run migrations.
 - Update `ecommerceApiProject/settings.py` to configure production settings and `ALLOWED_HOSTS` before deploying.
 
-## Suggested repository name & description
-
-- **Repository name:** `yt-ecommerce-api`
-- **Short description:** "A simple Django REST API for products, categories and cart functionality — built from a YouTube tutorial."
-
----
-
-If you'd like, I can also add a `requirements.txt`, create a GitHub repo and push the code — I will need either your confirmation to push to `https://github.com/Asakhe-S/yt-ecommerce-api` (create an empty repo there first), or a GitHub personal access token so I can create the repository and push on your behalf.
