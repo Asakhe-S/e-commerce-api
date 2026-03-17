@@ -6,9 +6,7 @@ from rest_framework.response import Response
 from .models import Cart, CartItem, Product, Category, Review, Wishlist
 from .serializers import CartItemSerializer, CartSerializer, ProductListSerializer, ProductDetailSerializer, CategoryListSerializer, CategoryDetailSerializer, ReviewSerializer, WishlistSerializer   
 from django.conf import settings
-import stripe    
 # Create your views here.
-stripe.api_key = settings.STRIPE_SECRET_KEY
 User = get_user_model()
 
 @api_view(['GET'])
@@ -84,13 +82,13 @@ def add_review(request):
     if Review.objects.filter(product=product, user=user).exists():
         return Response({'error': 'You have already reviewed this product.'}, status=400)
     
-    review, created = Review.objects.create(product=product, user=user, rating=rating, review=review_text)
+    review = Review.objects.create(product=product, user=user, rating=rating, review=review_text)
     serializer = ReviewSerializer(review)
     return Response(serializer.data)
 
 @api_view(['PUT'])
 def update_review(request, pk):
-    review = Review.objects.get('id=pk')
+    review = Review.objects.get(id=pk)
     rating = request.data.get('rating')
     review_text = request.data.get('review', '')  # Optional review text
     
@@ -116,7 +114,7 @@ def add_to_wishlist(request):
     product = Product.objects.get(id=product_id)
     
     wishlist = Wishlist.objects.filter(user=user, product=product)
-    if wishlist.exists:
+    if wishlist.exists():
         wishlist.delete()
         return Response({'message': 'Product removed from wishlist'}, status=200)
     
@@ -133,35 +131,3 @@ def product_search(request):
     products = Product.objects.filter (Q(name__icontains=query) | Q(description__icontains=query) | Q(category__name__icontains=query))
     serializer = ProductListSerializer(products, many=True)
     return Response(serializer.data)
-
-
-
-@api_view(['POST'])
-def create_stripe_checkout_session(request):
-    cart_code = request.data.get('cart_code')
-    email = request.data.get('email')
-    cart = Cart.objects.get(cart_code=cart_code)
-    try:
-        checkout_session = stripe.checkout.Session.create(
-            customer_email=email,
-            payment_method_types=['card'],
-            line_items=[
-                {
-                    'price_data': {
-                        'currency': 'usd',
-                        'product_data': {'name': item.product.name},
-                        'unit_amount': int(item.product.price) * 100,  # Amount in cents
-                    },
-                    'quantity': item.quantity,
-                }
-                
-                for item in cart.cartitems.all()
-            ],
-            mode='payment',
-            success_url="https://localhost:3000/success",
-            cancel_url="https://localhost:3000/cancel",
-        )
-        return Response({'data': checkout_session})
-    
-    except Exception as e:
-        return Response({'error': str(e)}, status=500)

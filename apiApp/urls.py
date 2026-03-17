@@ -15,6 +15,4 @@ urlpatterns = [
     path('delete_review/<int:pk>', views.delete_review, name='delete_review'),
     path('add_to_wishlist/', views.add_to_wishlist, name='add_to_wishlist'),
     path('product_search/', views.product_search, name='product_search'),
-    
-    path('create_stripe_checkout_session/', views.create_checkout_session, name='create_checkout_session'),
 ]

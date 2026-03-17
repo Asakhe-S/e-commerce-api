@@ -12,7 +12,7 @@ class ProductListSerializer(serializers.ModelSerializer):
 class ProductDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'name','price','description' 'slug', 'image']       
+        fields = ['id', 'name', 'price', 'description', 'slug', 'image']       
         
 class CategoryListSerializer(serializers.ModelSerializer):   
     class Meta:
@@ -23,15 +23,15 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
     products = ProductListSerializer(many=True, read_only=True)  # nested serializer to include products in category details    
     class Meta:
         model = Category
-        fields = ['id', 'name', 'image', 'slug', 'products ']        
+        fields = ['id', 'name', 'image', 'slug', 'products']        
         
         
 class CartItemSerializer(serializers.Serializer):
-    Product = ProductListSerializer(read_only=True)
+    product = ProductListSerializer(read_only=True)
     sub_total = serializers.SerializerMethodField()
     class Meta:
         model = CartItem
-        fields = ['id', 'product', 'quantity','sub_total']
+        fields = ['id', 'product', 'quantity', 'sub_total']
         
     def get_sub_total(self, cartitem):
         total = cartitem.product.price * cartitem.quantity
@@ -82,4 +82,4 @@ class WishlistSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
     class Meta:
         model = Wishlist
-        fields = ['id', 'product', 'user5', 'created']
+        fields = ['id', 'product', 'user', 'created']

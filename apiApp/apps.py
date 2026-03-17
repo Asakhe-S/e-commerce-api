@@ -5,6 +5,6 @@ class ApiappConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'apiApp'
     
-def ready(self):
-    import apiApp.signals  # Import signals to ensure they are registered
+    def ready(self):
+        import apiApp.signals  # Import signals to ensure they are registered
     

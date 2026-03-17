@@ -109,7 +109,7 @@ class Review(models.Model):
 class ProductRating(models.Model):
     product = models.OneToOneField(Product, related_name='rating', on_delete=models.CASCADE)
     average_rating = models.FloatField(default=0.0)
-    total_revuews = models.PositiveIntegerField(default=0)
+    total_reviews = models.PositiveIntegerField(default=0)
     
     def __str__(self):
         return f"Rating for {self.product.name}: {self.average_rating} based on {self.total_revuews} reviews"

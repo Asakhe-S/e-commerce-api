@@ -16,7 +16,7 @@ def update_product_rating_on_save(sender, instance, **kwargs):
     product_rating, created = ProductRating.objects.get_or_create(product=product)
     product_rating.average_rating = review_average
     product_rating.total_reviews = total_reviews
-    product_rating.save()   
+    product_rating.save()
 
 
 
