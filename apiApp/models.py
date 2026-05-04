@@ -28,7 +28,7 @@ class Category(models.Model):
             self.slug = slugify(self.name)
             unique_slug = self.slug
             counter = 1
-            if Product.objects.filter(slug=unique_slug).exists():
+            if Category.objects.filter(slug=unique_slug).exists():
                 unique_slug = f"{self.slug}-{counter}"
                 counter += 1
             self.slug = unique_slug
@@ -63,7 +63,7 @@ class Product(models.Model):
         
         
 class Cart(models.Model):       #creates a table called cart in the database
-   cart_code = models.CharField(max_length=11, unique=True)
+   cart_code = models.CharField(max_length=250, unique=True)
    created_at = models.DateTimeField(auto_now_add=True)
    updated_at = models.DateTimeField(auto_now=True)
    
@@ -112,7 +112,7 @@ class ProductRating(models.Model):
     total_reviews = models.PositiveIntegerField(default=0)
     
     def __str__(self):
-        return f"Rating for {self.product.name}: {self.average_rating} based on {self.total_revuews} reviews"
+        return f"Rating for {self.product.name}: {self.average_rating} based on {self.total_reviews} reviews"
  
  
 class Wishlist(models.Model):
@@ -126,3 +126,28 @@ class Wishlist(models.Model):
     
     def __str__(self):
         return f"{self.user.username} wishlisted {self.product.name}" 
+    
+    
+class Order(models.Model):
+    STATUS_CHOICES = [
+        ('pending','Pending'),
+        ('paid','Paid'),
+        ('failed','Failed')
+    ]
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='orders')
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    stripe_payment_intent = models.CharField(max_length=255, blank=True, null=True)
+    
+    def __str__(self):
+        return f"Order {self.id} by {self.user}"
+    
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    
+    def __str__(self):
+        return f"{self.quantity} of {self.product.name} in order {self.order.id}"

@@ -4,21 +4,49 @@ from django.contrib.auth import get_user_model
 
 
 class ProductListSerializer(serializers.ModelSerializer):
+    category_id = serializers.IntegerField(source='category.id', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    average_rating = serializers.SerializerMethodField()
+    
     class Meta:
         model = Product
-        fields = ['id', 'name','price', 'slug', 'image']
+        fields = ['id', 'name', 'price', 'slug', 'image', 'description', 'featured', 'category_id', 'category_name', 'average_rating']
+    
+    def get_average_rating(self, obj):
+        reviews = obj.reviews.all()
+        if reviews.exists():
+            avg = sum(review.rating for review in reviews) / len(reviews)
+            return round(avg, 1)
+        return None
         
         
 class ProductDetailSerializer(serializers.ModelSerializer):
+    category_id = serializers.IntegerField(source='category.id', read_only=True)
+    category_name = serializers.CharField(source='category.name', read_only=True)
+    average_rating = serializers.SerializerMethodField()
+    
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'description', 'slug', 'image']       
+        fields = ['id', 'name', 'price', 'description', 'slug', 'image', 'featured', 'category_id', 'category_name', 'average_rating']
+    
+    def get_average_rating(self, obj):
+        reviews = obj.reviews.all()
+        if reviews.exists():
+            avg = sum(review.rating for review in reviews) / len(reviews)
+            return round(avg, 1)
+        return None       
         
-class CategoryListSerializer(serializers.ModelSerializer):   
+class CategoryListSerializer(serializers.ModelSerializer):
+    products = ProductListSerializer(many=True, read_only=True)
+    product_count = serializers.SerializerMethodField()
+
     class Meta:
         model = Category
-        fields = ['id', 'name', 'image', 'slug',]
-        
+        fields = ['id', 'name', 'image', 'slug', 'product_count', 'products']
+
+    def get_product_count(self, obj):
+        return obj.products.count()
+
 class CategoryDetailSerializer(serializers.ModelSerializer):
     products = ProductListSerializer(many=True, read_only=True)  # nested serializer to include products in category details    
     class Meta:
@@ -26,9 +54,10 @@ class CategoryDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'image', 'slug', 'products']        
         
         
-class CartItemSerializer(serializers.Serializer):
+class CartItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer(read_only=True)
     sub_total = serializers.SerializerMethodField()
+    
     class Meta:
         model = CartItem
         fields = ['id', 'product', 'quantity', 'sub_total']
@@ -36,15 +65,15 @@ class CartItemSerializer(serializers.Serializer):
     def get_sub_total(self, cartitem):
         total = cartitem.product.price * cartitem.quantity
         return total
+        return total
     
-class CartSerializer(serializers.Serializer):
+class CartSerializer(serializers.ModelSerializer):
     cartitems = CartItemSerializer(many=True, read_only=True)
     total = serializers.SerializerMethodField()
     
     class Meta:
         model = Cart
         fields = ['id', 'cart_code', 'cartitems', 'total']
-        
         
     def get_total(self, cart):
         items = cart.cartitems.all()
